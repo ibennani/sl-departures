@@ -141,9 +141,9 @@ main02.show();
 	// Just for debuging
 var main01 = new UI.Card({
   title: "Fungerar",
-  body: 'lite data\n' + hallplatslistaData.LocationList.StopLocation[1].name
+  //body: 'lite data\n' + hallplatslistaData.LocationList.StopLocation[1].name
 });
-//main01.show();
+main01.show();
 
 // Construct the station list object
 // i.e. the menu listing all nearby stations
