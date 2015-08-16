@@ -2,7 +2,8 @@
 var UI = require('ui'); // Handles the user interface
 var Vector2 = require('vector2'); // Handles the menu listings
 var Vibe = require('ui/vibe'); // Handles the vibrations
-var ajax = require('ajax'); // Handles the data retrieval from external API:s
+//var ajax = require('ajax'); // Handles the data retrieval from external API:s
+
 
 
 // VARIABLE DEFINITIONS
@@ -46,7 +47,7 @@ URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&originCoordLong=' + lo
 URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&maxresults=' + NarliggandeHallplatserAntal;
 URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&radius=' + NarliggandeHallplatserAvstand;
 
-
+/*
 // Get list of stations nearby
 // Make the request
 ajax(
@@ -57,10 +58,10 @@ ajax(
   function(data) {
     // Success!
     console.log('Successfully fetched data!\n\n');
-		console.log('Hållplatsens namn: ' + data.LocationList.StopLocation[0].name + '\n\n');
-		hallplatslistaData = data;
+		//console.log('Hållplatsens namn: ' + data.LocationList.StopLocation[0].name + '\n\n');
+		//hallplatslistaData = data;
 		//valuated = 123456;
-		console.log('Dataobjektet!\n '+ hallplatslistaData +' \n');
+		
 //		var namn = data.LocationList.StopLocation[0].name;
 //		namn = namn.substring(0,(namn.indexOf('(') - 1));
 //		console.log('Hållplatsens namn utan kommun: ' + namn + '\n\n');
@@ -75,29 +76,28 @@ ajax(
 );
 
 
+
+*/
+
 // FUNCTIONS
+
 
 // This function creates the station list menu
 // and puts the stations into the array "items".
-var createStationList = function(data) {
-  var items[];
-	
-	// How many stations were found nearby?
-	var antalstationer = data.LocationList.StopLocation.length;
-	
-	// Loop through the stations and retreive relevant data
-	for(var i = 0; i < antalstationer ; i++) {
-    // Add each station as a menu entry
-    items.push({
-			title:data.LocationList.StopLocation[i].name,
-			subtitle: '208 m'
-    });
-		console.log('\n\nHålplatsen igen: '+ data.LocationList.StopLocation[0].name + '\n\n');
-  }
 
-  // Finally return whole array, i.e. the station list
+function createStationsNearbyList(data) {
+  var items = [];
+  
+  for (var i = 0; i < data.length; i++) {
+   
+    items.push({
+      title: data[i],
+      subtitle: '208 m'
+    });
+  }
+  
   return items;
-};
+}
 
 
 
@@ -109,7 +109,7 @@ var createStationList = function(data) {
 var splashWindow = new UI.Window();
 
 // ...and set the design of that splash scrren 
-var text = new UI.Text({
+var splashwindowText = new UI.Text({
   position: new Vector2(0, 0),
   size: new Vector2(144, 168),
   text:'\n\nSöker efter\nhållplatser i närheten\n\nVänta lite...',
@@ -121,29 +121,28 @@ var text = new UI.Text({
 });
 
 // Add the design/content of the splash screen
-splashWindow.add(text);
+splashWindow.add(splashwindowText);
 // ...and finaly show the splash screen
 splashWindow.show();
 
-
 	// Just for debuging
-var main02 = new UI.Card({
-  title: "Fungerar",
-  body: 'lite data\n' + valuated
-});
-main02.show();
-
-
-// Create the station list (i.e. the menu items)
-//var stationslist = createStationList(hallplatslistaData); // call the function defined above
-//var antalstationer = stationslist.length; // How many stations were retrieved
-
-	// Just for debuging
-var main01 = new UI.Card({
+	var main01 = new UI.Card({
   title: "Fungerar",
   //body: 'lite data\n' + hallplatslistaData.LocationList.StopLocation[1].name
 });
-main01.show();
+// main01.show();
+
+
+
+
+
+
+
+// Create the station list (i.e. the menu items)
+var stationslist = createStationsNearbyList(hallplatslista); // call the function defined above
+var antalstationer = stationslist.length; // How many stations were retrieved
+
+
 
 // Construct the station list object
 // i.e. the menu listing all nearby stations
@@ -279,12 +278,6 @@ splashWindow.hide();
 		departureinfoWindow.hide();
 	});
 });
-
-
-
-
-
-
 
 
 
