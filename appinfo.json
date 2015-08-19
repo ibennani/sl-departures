@@ -1,10 +1,10 @@
 {
     "appKeys": {},
     "capabilities": [
-        "location"
+        ""
     ],
-    "companyName": "Bennani Consulting",
-    "longName": "SL-Departures",
+    "companyName": "ilias@abc.se",
+    "longName": "SL Departures - Avg\u00e5ngar i realtid",
     "projectType": "pebblejs",
     "resources": {
         "media": [
@@ -32,8 +32,8 @@
         ]
     },
     "sdkVersion": "3",
-    "shortName": "SL-Departures",
-    "uuid": "74147700-bc6c-41e1-bbe9-9195522d07ce",
+    "shortName": "SL Departures",
+    "uuid": "7abc5d15-95fd-4393-847c-d44f01fdc171",
     "versionCode": 1,
     "versionLabel": "1.0",
     "watchapp": {
