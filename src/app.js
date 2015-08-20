@@ -151,17 +151,6 @@ var depatureItemsShapeUp = function(depatureItems,TypeOfViechle)
 
 // THE SCRIPT **********************************************************
 
-
-
-// Get GPS cords
-function locationSuccess(gpspos) 
-{
-  console.log('lat= ' + gpspos.coords.latitude + ' lon= ' + gpspos.coords.longitude);
-	var latitude = gpspos.coords.latitude;
-	var longitude = gpspos.coords.longitude;
-
-
-
 // Show a spash screen when the app is loaded to inform the user
 // that the pebble is retrieving a list of nearby stations
 var splashWindow = new UI.Window();
@@ -184,9 +173,21 @@ splashWindow.show();
 
 
 
+// Get GPS cords
+function locationSuccess(gpspos) 
+{
+  console.log('lat= ' + gpspos.coords.latitude + ' lon= ' + gpspos.coords.longitude);
+	var latitude = gpspos.coords.latitude;
+	var longitude = gpspos.coords.longitude;
+//	var latitude = 59.238657;
+//	var longitude = 18.095166;
+	console.log('latitude= ' + latitude + ' lon= ' + longitude);
 
 
-// set URL again
+
+
+
+
 // URL used to lookup nearby stations
 var URLnarliggandeHallplatser = 'http://api.sl.se/api2/nearbystops.' + URLdatatype;
 URLnarliggandeHallplatser = URLnarliggandeHallplatser + '?key=' + keyNarliggandeHallplatser;
@@ -219,24 +220,7 @@ ajax(
     // Add an action for SELECT
 		stationsMenu.on('select', function(e)
 		{
-			// Use a spash window to show some info while the station data is downloaded
-			// ...and set the design of that splash scrren 
-			var text = new UI.Text({
-				position: new Vector2(0, 0),
-				size: new Vector2(144, 168),
-				text: '\n\nSöker efter\nHämtar avgångar ifrån '+ stationdata.LocationList.StopLocation[e.itemIndex].name +'.\n\nVänta lite...',
-				font:'GOTHIC-14-bold',
-				color:'white',
-				textOverflow:'wrap',
-				textAlign:'center',
-				backgroundColor:'black'	
-			});	
-
-// Add to splashWindow and show
-splashWindow.add(text);
-splashWindow.show();			
-			
-			// Get station ID for the selected station
+		// Get station ID for the selected station
 			var stationID =  stationdata.LocationList.StopLocation[e.itemIndex].id;	
 			stationID = stationID.substring(4, 9); // Remove unneccerary information
 			
@@ -302,7 +286,6 @@ splashWindow.show();
 					// Show the vehicle menu
 					viechleTypetMenu.show();
 					// Hide the temp splashwindow
-					splashWindow.hide();
 					
 					// Add an action for SELECT
 					viechleTypetMenu.on('select', function(e)
