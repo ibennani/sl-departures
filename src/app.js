@@ -8,7 +8,11 @@ var ajax = require('ajax'); // Handles the data retrieval from external API:s
 
 // VARIABLE DEFINITIONS ************************************************
 
-
+var locationOptions = {
+  enableHighAccuracy: true, 
+  maximumAge: 10000, 
+  timeout: 10000
+};
 
 // SET COMMON VARIABLES
 var URLdatatype = 'json';
@@ -17,8 +21,8 @@ var keyNarliggandeHallplatser = '1a1cab30894d4f109a8051475a6d929d';
 var keyRealtidsinformation = 'b3cff3b5c99e4ac880265c725811ddf5';
 
 // These variabled will be replaced by real GPS locations
-var latitude = '59.23441';
-var longitude = '18.093774';
+// var latitude = '59.23441';
+// var longitude = '18.093774';
 var NarliggandeHallplatserAntal = 20; // Max number of stations to retrieve
 var NarliggandeHallplatserAvstand = 2000; // Radius in meters.
 
@@ -26,13 +30,7 @@ var timewindow = 60;
 
 // DEFINE THE URL:S FOR RETIEVING DATA FROM API'S
 
-// URL used to lookup nearby stations
-var URLnarliggandeHallplatser = 'http://api.sl.se/api2/nearbystops.' + URLdatatype;
-URLnarliggandeHallplatser = URLnarliggandeHallplatser + '?key=' + keyNarliggandeHallplatser;
-URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&originCoordLat=' + latitude;
-URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&originCoordLong=' + longitude;
-URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&maxresults=' + NarliggandeHallplatserAntal;
-URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&radius=' + NarliggandeHallplatserAvstand;
+
 
 // console.log('Närliggande URL:\n'+ URLnarliggandeHallplatser);
 
@@ -154,6 +152,16 @@ var depatureItemsShapeUp = function(depatureItems,TypeOfViechle)
 // THE SCRIPT **********************************************************
 
 
+
+// Get GPS cords
+function locationSuccess(gpspos) 
+{
+  console.log('lat= ' + gpspos.coords.latitude + ' lon= ' + gpspos.coords.longitude);
+	var latitude = gpspos.coords.latitude;
+	var longitude = gpspos.coords.longitude;
+
+
+
 // Show a spash screen when the app is loaded to inform the user
 // that the pebble is retrieving a list of nearby stations
 var splashWindow = new UI.Window();
@@ -180,7 +188,7 @@ splashWindow.show();
 
 // set URL again
 // URL used to lookup nearby stations
-URLnarliggandeHallplatser = 'http://api.sl.se/api2/nearbystops.' + URLdatatype;
+var URLnarliggandeHallplatser = 'http://api.sl.se/api2/nearbystops.' + URLdatatype;
 URLnarliggandeHallplatser = URLnarliggandeHallplatser + '?key=' + keyNarliggandeHallplatser;
 URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&originCoordLat=' + latitude;
 URLnarliggandeHallplatser = URLnarliggandeHallplatser + '&originCoordLong=' + longitude;
@@ -211,6 +219,23 @@ ajax(
     // Add an action for SELECT
 		stationsMenu.on('select', function(e)
 		{
+			// Use a spash window to show some info while the station data is downloaded
+			// ...and set the design of that splash scrren 
+			var text = new UI.Text({
+				position: new Vector2(0, 0),
+				size: new Vector2(144, 168),
+				text: '\n\nSöker efter\nHämtar avgångar ifrån '+ stationdata.LocationList.StopLocation[e.itemIndex].name +'.\n\nVänta lite...',
+				font:'GOTHIC-14-bold',
+				color:'white',
+				textOverflow:'wrap',
+				textAlign:'center',
+				backgroundColor:'black'	
+			});	
+
+// Add to splashWindow and show
+splashWindow.add(text);
+splashWindow.show();			
+			
 			// Get station ID for the selected station
 			var stationID =  stationdata.LocationList.StopLocation[e.itemIndex].id;	
 			stationID = stationID.substring(4, 9); // Remove unneccerary information
@@ -237,7 +262,7 @@ ajax(
 					// Find out if any busses will depart from this station
 					if (Object.keys(departureData.ResponseData.Buses).length > 0)
 					{
-					// Add to menu items array
+						// Add to menu items array
 						viechleType.push ({
 							title: 'Buss',
 							type: 'Buses'
@@ -249,8 +274,6 @@ ajax(
 						DepartureDataBuses = departureData.ResponseData.Buses;
 						
 					// Sort the buss info according to departure time
-						
-				
 						console.log('Det går '+ Object.keys(departureData.ResponseData.Buses).length + ' bussar ifrån '+stationdata.LocationList.StopLocation[e.itemIndex].name);
 					}
 					// Find out if any metros will depart from this station
@@ -278,6 +301,9 @@ ajax(
 					
 					// Show the vehicle menu
 					viechleTypetMenu.show();
+					// Hide the temp splashwindow
+					splashWindow.hide();
+					
 					// Add an action for SELECT
 					viechleTypetMenu.on('select', function(e)
 					{
@@ -345,7 +371,7 @@ ajax(
 							});
 	
 						// Create the text object containg line number
-							var departureinfoLinenumber = new UI.Text({
+						var departureinfoLinenumber = new UI.Text({
 								position: new Vector2(0, 30),
 								size: new Vector2(144, 44),
 								textAlign: 'center',
@@ -434,3 +460,13 @@ ajax(
 		console.log('No data found: ' + error);
   }
 );
+
+} // end of locationSuccess
+
+
+function locationError(err) {
+  console.log('location error (' + err.code + '): ' + err.message);
+}
+
+// Make an asynchronous request
+navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
