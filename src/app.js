@@ -107,10 +107,10 @@ var depatureItemsShapeUp = function(depatureItems,TypeOfViechle)
 			console.log(depatureItems[i].TransportModeText + ' ' + depatureItems[i].LineNumber + ' mot ' + depatureItems[i].Destination + ' avgår '+ depatureItems[i].DisplayTime);
 			
 		// Se the textsize of the destination depending of the ammount of letters in the destination name
-			if (depatureItems[i].Destination.length > 14) {
-  		  depatureItems[i].DestinationFont = 'Gothic-18-Bold';	
+			if (depatureItems[i].Destination.length > 12) {
+				depatureItems[i].DestinationFont = 'Gothic-18-Bold';	
 			} else {
-		    depatureItems[i].DestinationFont = 'Gothic-28-Bold';	
+				depatureItems[i].DestinationFont = 'Gothic-28-Bold';	
 			}				
 		}		
 	}
@@ -122,7 +122,7 @@ var depatureItemsShapeUp = function(depatureItems,TypeOfViechle)
 		depatureItems.sort(function(a, b)
 		{
 			var dateA=new Date(a.DisplayTime), 	dateB=new Date(b.DisplayTime);
- 			return dateA-dateB; //sort by departure time ascending
+			return dateA-dateB; //sort by departure time ascending
 		});
 	
 	// Loop trough all the departures and fix all data once and for all
@@ -161,19 +161,65 @@ var depatureItemsShapeUp = function(depatureItems,TypeOfViechle)
 			console.log(depatureItems[i].TransportModeText + ' ' + depatureItems[i].LineNumber + ' mot ' + depatureItems[i].Destination + ' avgår '+ depatureItems[i].DisplayTime);
 			
 		// Se the textsize of the destination depending of the ammount of letters in the destination name
-			if (depatureItems[i].Destination.length > 14) {
+			if (depatureItems[i].Destination.length > 12) {
   		  depatureItems[i].DestinationFont = 'Gothic-18-Bold';	
 			} else {
 		    depatureItems[i].DestinationFont = 'Gothic-28-Bold';	
 			}				
 		}		
-	}
+	} 
+	
 
 	// And finally return the data
 		return depatureItems;
 };
 
 
+
+// Set the visibility of the arrows in the departure info window
+var arrowVisibility = function (departureinfoWindow,departureinfoWindowCounter,depatureItemsAmmount)
+{
+	console.log('departureinfoWindowCounter '+departureinfoWindowCounter+' depatureItemsAmmount: '+depatureItemsAmmount);
+	// Create the image object showing the up icon
+		var departureinfoUp_icon = new UI.Image({
+			position: new Vector2(134, 25),
+			size: new Vector2(10, 18),
+			image: 'images/up_icon.png'
+		});				
+						
+	// Create the image object showing the down icon
+		var departureinfoDown_icon = new UI.Image({
+			position: new Vector2(134, 95),
+			size: new Vector2(10, 18),
+			image: 'images/down_icon.png'
+		});			
+	
+	// When will the arrows to the right be shown?
+	// Well, only if there is more than one departure
+		if (depatureItemsAmmount > 1)
+		{
+		// If the user is looking at the first departure
+			if (departureinfoWindowCounter === 0)
+			{
+				departureinfoWindow.remove(departureinfoUp_icon); // Hide the up icon
+				departureinfoWindow.add(departureinfoDown_icon); // Show the down icon
+			}						
+		
+		// If the user is at a departure between the first and the last departure
+			if (departureinfoWindowCounter > 0 || departureinfoWindowCounter < (depatureItemsAmmount - 1))
+			{
+				departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
+				departureinfoWindow.add(departureinfoDown_icon); // Show the down icon								
+			}
+						
+		// If the user is looking at the last departure
+			if (departureinfoWindowCounter === (depatureItemsAmmount - 1))
+			{
+				departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
+				departureinfoWindow.remove(departureinfoDown_icon); // Hide the down icon
+			}					
+		}
+};
 
 
 
@@ -206,10 +252,10 @@ splashWindow.show();
 function locationSuccess(gpspos) 
 {
   console.log('lat= ' + gpspos.coords.latitude + ' lon= ' + gpspos.coords.longitude);
-	var latitude = gpspos.coords.latitude;
-	var longitude = gpspos.coords.longitude;
-//	var latitude = 59.238657;
-//	var longitude = 18.095166;
+//	var latitude = gpspos.coords.latitude;
+//	var longitude = gpspos.coords.longitude;
+	var latitude = 59.082323;
+	var longitude = 18.173333;
 	console.log('latitude= ' + latitude + ' lon= ' + longitude);
 
 
@@ -235,7 +281,8 @@ ajax(
   },
   function(stationdata) // Found some stations nearby
 		{
-    // Create an array of Menu items
+    console.log('URL:\n'+URLnarliggandeHallplatser);
+		// Create an array of Menu items
     var menuItems = parseFeedStations(stationdata);	
 		
     // Construct Menu to show to user
@@ -268,6 +315,9 @@ ajax(
 				{
 					stationURL = ''; // Empty the URL in order to avoid problems next time the user selects a station
 					
+					// Used to count number of vichle types
+					var numOfViechleTypes = 0;
+					
 					// Create the select vehicle menu object 
 					// The user must select what kind of vehicle the user will jump on
 					// (Comming soon) but only if there's more than one type av vehicle
@@ -277,6 +327,9 @@ ajax(
 					// Find out if any busses will depart from this station
 					if (Object.keys(departureData.ResponseData.Buses).length > 0)
 					{
+						// Increse the variable
+						numOfViechleTypes++ ;
+						
 						// Add to menu items array
 						viechleType.push ({
 							title: 'Buss',
@@ -294,6 +347,9 @@ ajax(
 					// Find out if any metros will depart from this station
 					if (Object.keys(departureData.ResponseData.Metros).length > 0)
 					{
+					// Increse the variable
+						numOfViechleTypes++ ;	
+						
 					// Add to menu items array
 						viechleType.push ({
 							title: 'Tunnelbana',
@@ -310,34 +366,63 @@ ajax(
 					// Find out if any trains will depart from this station
 					if (Object.keys(departureData.ResponseData.Trains).length > 0)
 					{
+						// Increse the variable
+						numOfViechleTypes++ ;
+						
 						// Add to menu items array
 						viechleType.push ({
 							title: 'Pendeltåg',
 							type: 'Trains'
 						});	
 						
-					// Parse the DepartureData object and extact only the information about the busses
-						var DepartureDataBuses = departureData.ResponseData.Trains;
+					// Parse the DepartureData object and extact only the information about the trains
+						var DepartureDataTrains = departureData.ResponseData.Trains;
 						
 					// Sort the buss info according to departure time
 						console.log('Det går '+ Object.keys(departureData.ResponseData.Trains).length + ' pendeltåg ifrån '+stationdata.LocationList.StopLocation[e.itemIndex].name);
 					}					
 					
+					
+	/*				// If no departures were found, show an error message
+					if (numOfViechleTypes === 0)
+					{						
+					// Inform the user no departures were found
+						var noDepatrureInfohWindow = new UI.Window();
+
+					// ...and set the design of that splash scrren 
+						var noDepatrureInfoText = new UI.Text({
+						position: new Vector2(0, 0),
+						size: new Vector2(144, 168),
+						text: 'Söker efter\nhållplatser i närheten\n\nVänta lite...',
+						font:'Gothic-24-Bold',
+						color:'white',
+						textOverflow:'wrap',
+						textAlign:'center',
+						backgroundColor:'black'	
+					});	
+
+					// Add to splashWindow and show
+						noDepatrureInfohWindow.add(noDepatrureInfoText);
+						noDepatrureInfohWindow.show();
+					// Vibrate the watch to informe the user the error message is shown
+						Vibe.vibrate('long');		
+					} */
+
+					
 					// Create and show the viechleType menu 
 						var viechleTypetMenu = new UI.Menu({
 							sections: [{
 								title: 'Välj färdsätt:',
-							items: viechleType // here is the station list
+								items: viechleType // here is the station list
 						}]
-					});
+					});					
 					
-					// Show the vehicle menu
-					viechleTypetMenu.show();
-					// Vibrate the watch to informe the user the station list is shown
-					Vibe.vibrate('long');
-					// Hide the temp splashwindow
-					
-					// Add an action for SELECT
+					// Show the vehicle selection menu
+						viechleTypetMenu.show();
+						// Vibrate the watch to informe the user the station list is shown
+						Vibe.vibrate('long');						
+
+				// Add an action for SELECT
 					viechleTypetMenu.on('select', function(e)
 					{
 						// Vibrate to confirm the selection
@@ -381,10 +466,10 @@ ajax(
 						}												
 						
 						
-						// If the user selected Buses
+						// If the user selected Trains
 						if (viechleType[e.itemIndex].type == 'Trains')
 						{
-						// Extract the Busses info
+						// Extract the Train info
 							depatureItems = departureData.ResponseData.Trains;
 							
 						// How many departures were found?
@@ -433,7 +518,7 @@ ajax(
 		
 						// Create the text object containg destination
 							var departureinfoDestination = new UI.Text({
-								position: new Vector2(0, 80),
+								position: new Vector2(0, 75),
 								size: new Vector2(144, 30),
 								textAlign: 'center',
 								font: depatureItems[departureinfoWindowCounter].DestinationFont,
@@ -451,7 +536,9 @@ ajax(
 								font: 'Bitham 42 Bold',
 								color: 'white',
 								backgroundColor: 'clear'	
-							});						
+							});				
+						
+							
 	
 						// Add all the elements to the departureinfoWindow
 							departureinfoWindow.add(departureinfoStationname);
@@ -460,6 +547,8 @@ ajax(
 							departureinfoWindow.add(departureinfoDestination);
 							departureinfoWindow.add(departureinfoDeparturetime);
 
+						// Show the down arrow
+							arrowVisibility(departureinfoWindow,departureinfoWindowCounter,depatureItemsAmmount);	
 						
 						// Show thw departureinfoWindow	
 							departureinfoWindow.show();
@@ -478,7 +567,10 @@ ajax(
 									departureinfoDestination.font(depatureItems[departureinfoWindowCounter].DestinationFont);
 									departureinfoDestination.text(depatureItems[departureinfoWindowCounter].Destination);
 									departureinfoDeparturetime.text(depatureItems[departureinfoWindowCounter].DisplayTime);		
-												
+
+								// fix the arrows
+									arrowVisibility(departureinfoWindow,departureinfoWindowCounter,depatureItemsAmmount);									
+									
 								// Vibrate to confirm the selection
 									Vibe.vibrate(); 
 								}
@@ -497,12 +589,16 @@ ajax(
 									departureinfoLinenumber.text(depatureItems[departureinfoWindowCounter].LineNumber);
 									departureinfoDestination.font(depatureItems[departureinfoWindowCounter].DestinationFont);
 									departureinfoDestination.text(depatureItems[departureinfoWindowCounter].Destination);
-									departureinfoDeparturetime.text(depatureItems[departureinfoWindowCounter].DisplayTime);						
+									departureinfoDeparturetime.text(depatureItems[departureinfoWindowCounter].DisplayTime);				
+									
+								// fix the arrows
+									arrowVisibility(departureinfoWindow,departureinfoWindowCounter,depatureItemsAmmount);
+									
 								// Vibrate to confirm the selection
 									Vibe.vibrate(); 							
 								}
 							});
-					});
+					});						
 				}
 			);
 
@@ -518,9 +614,11 @@ ajax(
   function(error) // Did not find any stations
 	{
 		console.log('No data found: ' + error);
+		console.log('URL:\n'+URLnarliggandeHallplatser);
 		
 	// Inform the user no stations were found
 		splashWindow.text('Jag kunde inte hitta några hållplatser i närheten');
+		splashWindow.show();
   }
 );  
 	
