@@ -198,27 +198,39 @@ var arrowVisibility = function (departureinfoWindow,departureinfoWindowCounter,d
 	// Well, only if there is more than one departure
 		if (depatureItemsAmmount > 1)
 		{
-		// If the user is looking at the first departure
-			if (departureinfoWindowCounter === 0)
-			{
-				departureinfoWindow.remove(departureinfoUp_icon); // Hide the up icon
-				departureinfoWindow.add(departureinfoDown_icon); // Show the down icon
-			}						
+			departureinfoWindow.hide();
+			
+		switch (departureinfoWindowCounter)	
+		{
+			// If the user is looking at the first departure
+			case (0):
+				{ 
+					console.log('Fösta avgången');
+					departureinfoWindow.remove(departureinfoUp_icon); // Hide the up icon
+					departureinfoWindow.add(departureinfoDown_icon); // Show the down icon
+					break;
+				}						
 		
-		// If the user is at a departure between the first and the last departure
-			if (departureinfoWindowCounter > 0 || departureinfoWindowCounter < (depatureItemsAmmount - 1))
-			{
-				departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
-				departureinfoWindow.add(departureinfoDown_icon); // Show the down icon								
+			// If the user is at a departure between the first and the last departure
+				case (departureinfoWindowCounter > 0 && departureinfoWindowCounter < (depatureItemsAmmount - 1)):
+				{
+					console.log('En avgång i mitten');
+					departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
+					departureinfoWindow.add(departureinfoDown_icon); // Show the down icon	
+					break;
+				}
+							
+			// If the user is looking at the last departure
+			case ((depatureItemsAmmount - 1)):
+				{
+					console.log('Sista avgången');
+					departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
+					departureinfoWindow.remove(departureinfoDown_icon); // Hide the down icon
+					break;
+				}					
 			}
-						
-		// If the user is looking at the last departure
-			if (departureinfoWindowCounter === (depatureItemsAmmount - 1))
-			{
-				departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
-				departureinfoWindow.remove(departureinfoDown_icon); // Hide the down icon
-			}					
 		}
+		departureinfoWindow.show();
 };
 
 
@@ -254,8 +266,8 @@ function locationSuccess(gpspos)
   console.log('lat= ' + gpspos.coords.latitude + ' lon= ' + gpspos.coords.longitude);
 //	var latitude = gpspos.coords.latitude;
 //	var longitude = gpspos.coords.longitude;
-	var latitude = 59.082323;
-	var longitude = 18.173333;
+	var latitude = 59.236643;
+	var longitude = 18.101664;
 	console.log('latitude= ' + latitude + ' lon= ' + longitude);
 
 
@@ -280,8 +292,8 @@ ajax(
     type: URLdatatype
   },
   function(stationdata) // Found some stations nearby
-		{
-    console.log('URL:\n'+URLnarliggandeHallplatser);
+	{
+    console.log('URL för närliggande stationer:\n'+URLnarliggandeHallplatser);
 		// Create an array of Menu items
     var menuItems = parseFeedStations(stationdata);	
 		
@@ -292,10 +304,18 @@ ajax(
         items: menuItems
       }]
     });		
+			
+    // Show the Menu, hide the splash and vibrate
+    stationsMenu.show();
+    splashWindow.hide();
+		Vibe.vibrate('long');			
 		
+			
+			
     // Add an action for SELECT
-		stationsMenu.on('select', function(e)
+		stationsMenu.on('click','select', function(e)
 		{
+			console.log('Klickat på en station');
 		// Vibrate to confirm the selection
 			Vibe.vibrate(); 
 		// Get station ID for the selected station
@@ -383,7 +403,7 @@ ajax(
 					}					
 					
 					
-	/*				// If no departures were found, show an error message
+					// If no departures were found, show an error message
 					if (numOfViechleTypes === 0)
 					{						
 					// Inform the user no departures were found
@@ -406,7 +426,7 @@ ajax(
 						noDepatrureInfohWindow.show();
 					// Vibrate the watch to informe the user the error message is shown
 						Vibe.vibrate('long');		
-					} */
+					} 
 
 					
 					// Create and show the viechleType menu 
@@ -423,10 +443,10 @@ ajax(
 						Vibe.vibrate('long');						
 
 				// Add an action for SELECT
-					viechleTypetMenu.on('select', function(e)
+					viechleTypetMenu.on('click', 'select', function(e)
 					{
 						// Vibrate to confirm the selection
-							Vibe.vibrate(); 						
+							Vibe.vibrate();
 						// What kind of viechle did the user select?
 							console.log('Användaren valde '+ viechleType[e.itemIndex].type);
 						
@@ -551,7 +571,7 @@ ajax(
 							arrowVisibility(departureinfoWindow,departureinfoWindowCounter,depatureItemsAmmount);	
 						
 						// Show thw departureinfoWindow	
-							departureinfoWindow.show();
+						//	departureinfoWindow.show();
 						
 						// Add a down action to the departureinfoWindow
 							departureinfoWindow.on('click', 'down', function() 
@@ -595,34 +615,24 @@ ajax(
 									arrowVisibility(departureinfoWindow,departureinfoWindowCounter,depatureItemsAmmount);
 									
 								// Vibrate to confirm the selection
-									Vibe.vibrate(); 							
+									Vibe.vibrate();				
 								}
 							});
 					});						
-				}
-			);
+				
+        });
 
-		});
-    // Show the Menu, hide the splash and vibrate
-    stationsMenu.show();
-    splashWindow.hide();
-		Vibe.vibrate('long');
+		});		
 		
-		
-  },
+	},
 	
+
   function(error) // Did not find any stations
 	{
 		console.log('No data found: ' + error);
 		console.log('URL:\n'+URLnarliggandeHallplatser);
-		
-	// Inform the user no stations were found
-		splashWindow.text('Jag kunde inte hitta några hållplatser i närheten');
-		splashWindow.show();
-  }
-);  
-	
-} // end of locationSuccess
+	}
+	);//end of locationSuccess
 
 
 function locationError(err) {
