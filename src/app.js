@@ -309,8 +309,6 @@ ajax(
     stationsMenu.show();
     splashWindow.hide();
 		Vibe.vibrate('long');			
-		
-			
 			
     // Add an action for SELECT
 		stationsMenu.on('click','select', function(e)
@@ -622,18 +620,19 @@ ajax(
 				
         });
 
-		});		
+		});	// End of select station
 		
-	},
+		}, // End of found some stations nearby
 	
 
   function(error) // Did not find any stations
 	{
 		console.log('No data found: ' + error);
 		console.log('URL:\n'+URLnarliggandeHallplatser);
-	}
-	);//end of locationSuccess
+	} // End of did not find any stations
 
+	); 
+}//end of locationSuccess
 
 function locationError(err) {
   console.log('location error (' + err.code + '): ' + err.message);
