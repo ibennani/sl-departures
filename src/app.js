@@ -309,9 +309,10 @@ ajax(
     stationsMenu.show();
     splashWindow.hide();
 		Vibe.vibrate('long');			
+		
 			
     // Add an action for SELECT
-		stationsMenu.on('click','select', function(e)
+		stationsMenu.on('select', function(e)
 		{
 			console.log('Klickat på en station');
 		// Vibrate to confirm the selection
@@ -401,32 +402,7 @@ ajax(
 					}					
 					
 					
-					// If no departures were found, show an error message
-					if (numOfViechleTypes === 0)
-					{						
-					// Inform the user no departures were found
-						var noDepatrureInfohWindow = new UI.Window();
-
-					// ...and set the design of that splash scrren 
-						var noDepatrureInfoText = new UI.Text({
-						position: new Vector2(0, 0),
-						size: new Vector2(144, 168),
-						text: 'Söker efter\nhållplatser i närheten\n\nVänta lite...',
-						font:'Gothic-24-Bold',
-						color:'white',
-						textOverflow:'wrap',
-						textAlign:'center',
-						backgroundColor:'black'	
-					});	
-
-					// Add to splashWindow and show
-						noDepatrureInfohWindow.add(noDepatrureInfoText);
-						noDepatrureInfohWindow.show();
-					// Vibrate the watch to informe the user the error message is shown
-						Vibe.vibrate('long');		
-					} 
-
-					
+				
 					// Create and show the viechleType menu 
 						var viechleTypetMenu = new UI.Menu({
 							sections: [{
@@ -441,7 +417,7 @@ ajax(
 						Vibe.vibrate('long');						
 
 				// Add an action for SELECT
-					viechleTypetMenu.on('click', 'select', function(e)
+					viechleTypetMenu.on( 'select', function(e)
 					{
 						// Vibrate to confirm the selection
 							Vibe.vibrate();
@@ -620,7 +596,7 @@ ajax(
 				
         });
 
-		});	// End of select station
+		});	// End of select station 
 		
 		}, // End of found some stations nearby
 	
