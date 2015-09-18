@@ -94,22 +94,24 @@ var depatureItemsShapeUp = function(depatureItems,TypeOfViechle)
 	{
 	// Sort the data on departure time accending (First depature comes first etc)
 		depatureItems.sort(function(a, b){
- 			var dateA=new Date(a.ExpectedDateTime), dateB=new Date(b.ExpectedDateTime);
- 			return dateA-dateB; //sort by departure time ascending
+			var dateA = new Date(a.ExpectedDateTime), 
+					dateB = new Date(b.ExpectedDateTime);
+			return dateA-dateB; //sort by departure time ascending
 		});
-	
+	console.log('Sorted busses - ok');
 	// Loop trough all the departures and fix all data once and for all
 	// This is to reduce the need of calling this function to often
+		console.log('Object.keys(depatureItems).length: '+Object.keys(depatureItems).length);
 		for (var i = 0 ; i < Object.keys(depatureItems).length ; i++)  
 		{
 		// Set the name of the viechle type to be displayed
 			depatureItems[i].TransportModeText = 'Buss';	
-			console.log(depatureItems[i].TransportModeText + ' ' + depatureItems[i].LineNumber + ' mot ' + depatureItems[i].Destination + ' avgår '+ depatureItems[i].DisplayTime);
+			console.log(i + ': '+depatureItems[i].TransportModeText + ' ' + depatureItems[i].LineNumber + ' mot ' + depatureItems[i].Destination + ' avgår '+ depatureItems[i].DisplayTime);
 			
 		// Se the textsize of the destination depending of the ammount of letters in the destination name
 			if (depatureItems[i].Destination.length > 12) {
 				depatureItems[i].DestinationFont = 'Gothic-18-Bold';	
-			} else {
+				} else {
 				depatureItems[i].DestinationFont = 'Gothic-28-Bold';	
 			}				
 		}		
@@ -169,6 +171,38 @@ var depatureItemsShapeUp = function(depatureItems,TypeOfViechle)
 		}		
 	} 
 	
+	
+	// Shape upp the TRAM data 
+	if (TypeOfViechle == "Lidingöbanan" ||	
+			TypeOfViechle == "Nockebybanan" ||
+			TypeOfViechle == "Roslagsbanan" ||
+			TypeOfViechle == "Saltsjöbanan" ||
+			TypeOfViechle == "Spårväg City" ||
+			TypeOfViechle == "Tvärbanan") 
+	{
+	// Sort the data on departure time accending (First depature comes first etc)
+		depatureItems.sort(function(a, b){
+			var dateA=new Date(a.ExpectedDateTime), dateB=new Date(b.ExpectedDateTime);
+			return dateA-dateB; //sort by departure time ascending
+		});
+	
+	// Loop trough all the departures and fix all data once and for all
+	// This is to reduce the need of calling this function to often
+		for (var i = 0 ; i < Object.keys(depatureItems).length ; i++)
+		{
+		// Set the name of the viechle type to be displayed
+			depatureItems[i].TransportModeText = TypeOfViechle;	
+			console.log(depatureItems[i].TransportModeText + ' ' + depatureItems[i].LineNumber + ' mot ' + depatureItems[i].Destination + ' avgår '+ depatureItems[i].DisplayTime);
+			
+		// Se the textsize of the destination depending of the ammount of letters in the destination name
+			if (depatureItems[i].Destination.length > 12) {
+				depatureItems[i].DestinationFont = 'Gothic-18-Bold';	
+			} else {
+				depatureItems[i].DestinationFont = 'Gothic-28-Bold';	
+			}				
+		}		
+	} 
+	
 
 	// And finally return the data
 		return depatureItems;
@@ -198,42 +232,54 @@ var arrowVisibility = function (departureinfoWindow,departureinfoWindowCounter,d
 	// Well, only if there is more than one departure
 		if (depatureItemsAmmount > 1)
 		{
-			departureinfoWindow.hide();
+		// hide the arrows
+			departureinfoWindow.remove(departureinfoUp_icon); 
+			departureinfoWindow.remove(departureinfoDown_icon); 
 			
 		switch (departureinfoWindowCounter)	
 		{
 			// If the user is looking at the first departure
-			case (0):
+				case (0):
 				{ 
 					console.log('Fösta avgången');
 					departureinfoWindow.remove(departureinfoUp_icon); // Hide the up icon
-					departureinfoWindow.add(departureinfoDown_icon); // Show the down icon
+					departureinfoWindow.add(departureinfoDown_icon);  // Show the down icon
 					break;
 				}						
 		
-			// If the user is at a departure between the first and the last departure
-				case (departureinfoWindowCounter > 0 && departureinfoWindowCounter < (depatureItemsAmmount - 1)):
-				{
-					console.log('En avgång i mitten');
-					departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
-					departureinfoWindow.add(departureinfoDown_icon); // Show the down icon	
-					break;
-				}
-							
 			// If the user is looking at the last departure
-			case ((depatureItemsAmmount - 1)):
+				case ((depatureItemsAmmount - 1)):
 				{
 					console.log('Sista avgången');
-					departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
+					departureinfoWindow.add(departureinfoUp_icon);      // Show the up icon
 					departureinfoWindow.remove(departureinfoDown_icon); // Hide the down icon
+				break;
+				}
+				
+			// If the user is at a departure between the first and the last departure
+			default:
+				{
+					if (depatureItemsAmmount > 2)
+					{
+						console.log('En avgång i mitten');
+						departureinfoWindow.add(departureinfoUp_icon); // Show the up icon
+						departureinfoWindow.add(departureinfoDown_icon); // Show the down icon		
+					}					
 					break;
-				}					
+				}				
+				
 			}
 		}
-		departureinfoWindow.show();
+		//departureinfoWindow.show();
 };
 
-
+// This function extracts all the tram depatrures of a certain type of tram.
+// For instance, it extacts all the trams of type "Nockebybanan" from a set of tram departures
+function extractTramDepatruresByViechle(arr, tramType) {
+  return arr.filter(function (el) {
+    return el.GroupOfLine === tramType;
+  });
+}
 
 
 // THE SCRIPT **********************************************************
@@ -264,10 +310,10 @@ splashWindow.show();
 function locationSuccess(gpspos) 
 {
   console.log('lat= ' + gpspos.coords.latitude + ' lon= ' + gpspos.coords.longitude);
-//	var latitude = gpspos.coords.latitude;
-//	var longitude = gpspos.coords.longitude;
-	var latitude = 59.236643;
-	var longitude = 18.101664;
+	var latitude = gpspos.coords.latitude;
+	var longitude = gpspos.coords.longitude;
+//	var latitude = 59.299199;
+//	var longitude = 18.080944;
 	console.log('latitude= ' + latitude + ' lon= ' + longitude);
 
 
@@ -334,7 +380,7 @@ ajax(
 				{
 					stationURL = ''; // Empty the URL in order to avoid problems next time the user selects a station
 					
-					// Used to count number of vichle types
+					// Used to count number of viechle types
 					var numOfViechleTypes = 0;
 					
 					// Create the select vehicle menu object 
@@ -355,9 +401,6 @@ ajax(
 							type: 'Buses'
 						});	
 						
-					// Parse the DepartureData object and extact only the information about the busses
-						var DepartureDataBuses = departureData.ResponseData.Buses;
-						
 					// Sort the buss info according to departure time
 						console.log('Det går '+ Object.keys(departureData.ResponseData.Buses).length + ' bussar ifrån '+stationdata.LocationList.StopLocation[e.itemIndex].name);
 					}
@@ -374,10 +417,6 @@ ajax(
 							title: 'Tunnelbana',
 							type: 'Metros'
 						});	
-						
-					// Parse the DepartureData object and extact only the information about the metros
-						var DepartureDataMetros = departureData.ResponseData.Metros;
-
 						console.log('Det går '+ Object.keys(departureData.ResponseData.Metros).length + ' tunnelbanor ifrån '+stationdata.LocationList.StopLocation[e.itemIndex].name);
 					}
 					
@@ -394,13 +433,44 @@ ajax(
 							type: 'Trains'
 						});	
 						
-					// Parse the DepartureData object and extact only the information about the trains
-						var DepartureDataTrains = departureData.ResponseData.Trains;
-						
-					// Sort the buss info according to departure time
+					// Sort the train info according to departure time
 						console.log('Det går '+ Object.keys(departureData.ResponseData.Trains).length + ' pendeltåg ifrån '+stationdata.LocationList.StopLocation[e.itemIndex].name);
 					}					
 					
+					
+					// Find out if any trams (not trains) will depart from this station
+					if (Object.keys(departureData.ResponseData.Trams).length > 0)
+					{
+					// Sort the train info according to departure time
+						console.log('Det går '+ Object.keys(departureData.ResponseData.Trams).length + ' spårvagnar ifrån '+stationdata.LocationList.StopLocation[e.itemIndex].name);						
+					
+					// Find out what kind of trams and how many of these kind of trams depart from this station	
+						var TramTypes = [], TramTypesAmmount = 0;
+						for(var i=0;i < Object.keys(departureData.ResponseData.Trams).length -1 ;i++)
+						{
+							var str=departureData.ResponseData.Trams[i].GroupOfLine;
+							if(TramTypes.indexOf(str)==-1)
+							{
+								TramTypes.push(str); 
+								TramTypesAmmount++;
+							}
+						}
+						console.log('Dessa '+ TramTypesAmmount +' spårvagnar avgår härifrån: '+TramTypes.sort() );
+	
+					// Increse the variable
+						numOfViechleTypes = numOfViechleTypes + TramTypesAmmount;
+
+					// Add to menu items array
+					// Since there can be more than one type of tram, we have to loop trough all the tram types departing from this station 
+					// and add each type to the menu object.
+						for (i =0; i < TramTypesAmmount;i++)
+						{
+							viechleType.push ({
+								title: TramTypes[i],
+								type: TramTypes[i]
+							});		
+						}
+					}						
 					
 				
 					// Create and show the viechleType menu 
@@ -431,6 +501,7 @@ ajax(
 						// The array will contain different items depending on
 						// what kind of viechle the user selects.
 							var depatureItems = [] ;
+						
 						
 						// If the user selected Buses
 						if (viechleType[e.itemIndex].type == 'Buses')
@@ -471,7 +542,29 @@ ajax(
 							
 						// Enchance the informtion and set some additional variables for the Trains content
 							depatureItems = depatureItemsShapeUp(depatureItems,viechleType[e.itemIndex].type);
+						}				
+						
+	
+						// If the user selected some of the tramways
+						//if (viechleType[e.itemIndex].type in ['Lidingöbanan' || 'Nockebybanan' || 'Roslagsbanan' || 'Saltsjöbanan' || 'Spårväg City' || 'Tvärbanan'])
+						if (viechleType[e.itemIndex].type == 'Lidingöbanan' ||
+								viechleType[e.itemIndex].type == 'Nockebybanan' ||
+								viechleType[e.itemIndex].type == 'Roslagsbanan' ||
+								viechleType[e.itemIndex].type == 'Saltsjöbanan' ||
+								viechleType[e.itemIndex].type == 'Spårväg City' ||
+								viechleType[e.itemIndex].type == 'Tvärbanan')
+						{
+							console.log('Innifrån huvudvalet: viechleType[e.itemIndex].type '+viechleType[e.itemIndex].type);
+						// Extract the Tram info for the selected tramway
+							depatureItems = extractTramDepatruresByViechle(departureData.ResponseData.Trams, viechleType[e.itemIndex].type);
+							
+						// How many departures were found?
+							depatureItemsAmmount = Object.keys(depatureItems).length;
+
+						// Enchance the informtion and set some additional variables for the Trains content
+							depatureItems = depatureItemsShapeUp(depatureItems,viechleType[e.itemIndex].type);
 						}							
+						
 						
 						
 						// Create the departureinfoWindow
@@ -540,12 +633,13 @@ ajax(
 							departureinfoWindow.add(departureinfoLinenumber);
 							departureinfoWindow.add(departureinfoDestination);
 							departureinfoWindow.add(departureinfoDeparturetime);
+						
+						// Show thw departureinfoWindow	
+							departureinfoWindow.show();
 
 						// Show the down arrow
 							arrowVisibility(departureinfoWindow,departureinfoWindowCounter,depatureItemsAmmount);	
-						
-						// Show thw departureinfoWindow	
-						//	departureinfoWindow.show();
+
 						
 						// Add a down action to the departureinfoWindow
 							departureinfoWindow.on('click', 'down', function() 
